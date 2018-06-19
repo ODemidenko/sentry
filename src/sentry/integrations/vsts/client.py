@@ -9,6 +9,7 @@ FIELD_MAP = {
     'description': '/fields/System.Description',
     'comment': '/fields/System.History',
     'link': '/relations/-',
+    'assigned_to': '/fields/System.AssignedTo',
 }
 
 
@@ -20,18 +21,21 @@ class VstsApiPath(object):
     repositories = u'https://{account_name}/DefaultCollection/{project}_apis/git/repositories/{repo_id}'
     work_items = u'https://{account_name}/DefaultCollection/_apis/wit/workitems/{id}'
     work_items_create = u'https://{account_name}/{project}/_apis/wit/workitems/${type}'
+    users = u'https://{account_name}.vssps.visualstudio.com/_apis/graph/users'
 
 
 class VstsApiClient(ApiClient):
     api_version = '4.1'
+    api_version_preview = '-preview.1'
 
     def __init__(self, access_token, *args, **kwargs):
         super(VstsApiClient, self).__init__(*args, **kwargs)
         self.access_token = access_token
 
-    def request(self, method, path, data=None, params=None):
+    def request(self, method, path, data=None, params=None, api_preview=False):
+        api_version = self.api_version if api_preview is False else self.api_version + self.api_version_preview
         headers = {
-            'Accept': 'application/json; api-version={}'.format(self.api_version),
+            'Accept': 'application/json; api-version={}'.format(api_version),
             'Content-Type': 'application/json-patch+json' if method == 'PATCH' else 'application/json',
             'X-HTTP-Method-Override': method,
             'X-TFS-FedAuthRedirect': 'Suppress',
@@ -81,7 +85,7 @@ class VstsApiClient(ApiClient):
         )
 
     def update_work_item(self, instance, id, title=UNSET, description=UNSET, link=UNSET,
-                         comment=UNSET):
+                         comment=UNSET, assigned_to=UNSET):
         data = []
 
         for f_name, f_value in (('title', title), ('description', description), ('link', link)):
@@ -186,4 +190,12 @@ class VstsApiClient(ApiClient):
                 account_name=instance,
             ),
             params={'stateFilter': 'WellFormed'}
+        )
+
+    def get_users(self, account_name):
+        return self.get(
+            VstsApiPath.users.format(
+                account_name=account_name,
+            ),
+            api_preview=True,
         )
