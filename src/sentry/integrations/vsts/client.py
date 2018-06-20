@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from sentry.integrations.client import ApiClient
 
 UNSET = object()
+NULL = 'null'
 
 FIELD_MAP = {
     'title': '/fields/System.Title',

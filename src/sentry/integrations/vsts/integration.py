@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from sentry import http
 from time import time
 from django import forms
+import logging
 
 from django.utils.translation import ugettext_lazy as _
 from sentry.web.helpers import render_to_response
@@ -70,6 +71,8 @@ class ProjectForm(forms.Form):
 
 
 class VstsIntegration(Integration):
+    logger = logging.getLogger('sentry.integrations')
+
     def __init__(self, *args, **kwargs):
         super(VstsIntegration, self).__init__(*args, **kwargs)
         self.default_identity = None
