@@ -387,11 +387,15 @@ class SnubaTagStorage(TagStorage):
             'environment': [environment_id],
             'issue': [group_id],
         }
+        aggregations = [
+            ['max', SEEN_COLUMN, 'last_seen'],
+        ]
 
         conditions = [[['tags[{}]'.format(k), '=', v] for (k, v) in tags.items()]]
 
         result = snuba.query(start, end, groupby=['event_id'], conditions=conditions,
-            filter_keys=filters, limit=1000, referrer='tagstore.get_group_event_filter')
+            aggregations=aggregations, filter_keys=filters, limit=1000, orderby='-last_seen',
+            referrer='tagstore.get_group_event_filter')
 
         if not result:
             return None
